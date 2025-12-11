@@ -1,20 +1,27 @@
 import csv
-
 from django.core.management.base import BaseCommand
+from django.utils.text import slugify
 from phones.models import Phone
 
 
 class Command(BaseCommand):
-    def add_arguments(self, parser):
-        pass
+    help = "Import phones from CSV"
 
     def handle(self, *args, **options):
-        with open('phones.csv', 'r') as csvfile:
+        with open('phones.csv', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
 
-            phone_reader = csv.reader(csvfile, delimiter=';')
-            # пропускаем заголовок
-            next(phone_reader)
+            for row in reader:
+                Phone.objects.update_or_create(
+                    id=row['id'],
+                    defaults={
+                        'name': row['name'],
+                        'price': float(row['price']),
+                        'image': row['image'],
+                        'release_date': row['release_date'],
+                        'lte_exists': row['lte_exists'].lower() == 'true',
+                        'slug': slugify(row['name']),
+                    }
+                )
 
-            for line in phone_reader:
-                # TODO: Добавьте сохранение модели
-                pass
+        self.stdout.write(self.style.SUCCESS("Импорт завершен"))
