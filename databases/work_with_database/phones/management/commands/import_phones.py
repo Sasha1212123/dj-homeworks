@@ -13,7 +13,7 @@ class Command(BaseCommand):
 
             for row in reader:
                 Phone.objects.update_or_create(
-                    id=row['id'],
+                    id=int(row['id']),
                     defaults={
                         'name': row['name'],
                         'price': float(row['price']),
